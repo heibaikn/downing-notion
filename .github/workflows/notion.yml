@@ -17,7 +17,7 @@ jobs:
         node-version: 18
 
     - name: Install dependencies
-      run: npm install  # 如果你有需要的依赖，你可以在这里安装
+      run: npm install && npm run backup
 
     - name: Sync Notion Notes
       run: |
