@@ -1,0 +1,33 @@
+name: Sync Notion Notes to GitHub
+on:
+  push:
+    branches:
+      - main  # 触发工作流程的分支，可以根据你的需求更改
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm install  # 如果你有需要的依赖，你可以在这里安装
+
+    - name: Sync Notion Notes
+      run: |
+        # 在这里编写同步脚本，使用 Notion API 获取笔记内容并推送到GitHub
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.email "youremail@example.com"
+        git config --global user.name "Your Name"
+        git add .
+        git commit -m "Sync Notion notes"
+        git push
+
