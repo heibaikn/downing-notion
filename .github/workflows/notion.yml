@@ -8,12 +8,15 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    environment: development 
     steps:
     - name: Check out repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        ref: 'doc'
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: 18
 
@@ -25,7 +28,13 @@ jobs:
         # 在这里编写同步脚本，使用 Notion API 获取笔记内容并推送到GitHub
 
     - name: Commit and push changes
+      # with:
+      #   token: ${{ secrets.REPO_TOKEN }}
+      env:
+        # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       run: |
+        echo $GITHUB_TOKEN
         git config --global user.email "heibaikn@163.com"
         git config --global user.name "heibaikn"
         git add .
