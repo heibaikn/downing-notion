@@ -1,15 +1,14 @@
+require('dotenv').config();
 const axios = require(`axios`);
 const extract = require(`extract-zip`);
 const { createWriteStream } = require(`fs`);
 const { rm, mkdir, unlink } = require(`fs/promises`);
 const { join } = require(`path`);
+// import { EventEmitter } from 'node:events';
 
 const unofficialNotionAPI = `https://www.notion.so/api/v3`;
-// const { NOTION_TOKEN, NOTION_SPACE_ID, NOTION_USER_ID } = process.env;
-const NOTION_TOKEN = "v02%3Auser_token_or_cookies%3AcaajaXUB6rMNKOY1yxIQrzj_wH46beRG6c2zNjf_9UPqLInvI3qwC1t5eH1YQ0ZZS_DpVug54ui_HpUEoOHGXa-B9KI2nQKYJYNKBCddWQRkrjgRNSvr_R0pHTx8yAhqy_Mu"
-const NOTION_SPACE_ID = "54fdf465-3d1a-4b96-bedc-6e19dab04cdf"
-const NOTION_FOLDER_ID = "c6155f1f-09fc-444e-b11b-c0b6de464f12"
-const NOTION_USER_ID = "957a795a-484a-4db1-8fec-cdbe66701569"
+const { NOTION_TOKEN, NOTION_SPACE_ID, NOTION_USER_ID, NOTION_FOLDER_ID } = process.env;
+
 const client = axios.create({
   baseURL: unofficialNotionAPI,
   headers: {
@@ -37,12 +36,10 @@ const exportFromNotion = async (destination, format) => {
   const task = {
     eventName: `exportSpace`,
     request: {
-      spaceId:NOTION_SPACE_ID,
+      spaceId: NOTION_SPACE_ID,
       // block: {
       //   id: NOTION_FOLDER_ID,
       //   spaceId: NOTION_SPACE_ID
-      //   // id: 'c6155f1f-09fc-444e-b11b-c0b6de464f12',
-      //   // spaceId: "54fdf465-3d1a-4b96-bedc-6e19dab04cdf"
       // },
       exportOptions: {
         exportType: format,
@@ -50,7 +47,7 @@ const exportFromNotion = async (destination, format) => {
         locale: `en`,
       },
       // recursive: true,
-      shouldExportComments:false
+      shouldExportComments: false
     },
   };
   const {
@@ -108,12 +105,26 @@ const exportFromNotion = async (destination, format) => {
 const run = async () => {
   const workspaceDir = join(process.cwd(), `workspace`);
   const workspaceZip = join(process.cwd(), `workspace.zip`);
-
   await exportFromNotion(workspaceZip, `markdown`);
   await rm(workspaceDir, { recursive: true, force: true });
   await mkdir(workspaceDir, { recursive: true });
-  await extract(workspaceZip, { dir: workspaceDir });
+  await extract(workspaceZip, {
+    dir: workspaceDir, onEntry: async (entry, zipfile) => {
+      if (entry.fileName.toLowerCase().endsWith('.zip')) {
+        const nestedZipFile = join(workspaceDir, entry.fileName);
+        zipfile.openReadStream(entry, (err, readStream) => {
+          if (err) throw err;
+          const writeStream = createWriteStream(nestedZipFile);
+          readStream.pipe(writeStream);
+          writeStream.on('finish', () => {
+            extract(nestedZipFile, { dir: workspaceDir })
+          });
+        });
+      }
+    }
+  });
   await unlink(workspaceZip);
+
 
   console.log(`✅ Export downloaded and unzipped.`);
 };

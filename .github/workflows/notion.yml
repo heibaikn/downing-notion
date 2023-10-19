@@ -17,10 +17,10 @@ jobs:
         node-version: 18
 
     - name: Install dependencies
-      run: npm install && npm run backup
+      run: npm install 
 
     - name: Sync Notion Notes
-      run: |
+      run: npm run backup
         # 在这里编写同步脚本，使用 Notion API 获取笔记内容并推送到GitHub
 
     - name: Commit and push changes
