@@ -2,7 +2,8 @@ name: Sync Notion Notes to GitHub
 on:
   push:
     branches:
-      - main  # 触发工作流程的分支，可以根据你的需求更改
+      - doc
+  workflow_dispatch: 
 
 jobs:
   sync:
@@ -25,8 +26,8 @@ jobs:
 
     - name: Commit and push changes
       run: |
-        git config --global user.email "youremail@example.com"
-        git config --global user.name "Your Name"
+        git config --global user.email "heibaikn@163.com"
+        git config --global user.name "heibaikn"
         git add .
         git commit -m "Sync Notion notes"
         git push
